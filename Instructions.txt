@@ -1,0 +1,107 @@
+
+************************************************ SWITCH CONFIGURATION **********************************************************
+
+Switch>en
+Switch#conf t
+Enter configuration commands, one per line.  End with CNTL/Z.
+Switch(config)#vlan 10
+Switch(config-vlan)#name DATA
+Switch(config-vlan)#vlan 20
+Switch(config-vlan)#name VOICE
+Switch(config-vlan)#vlan 30
+Switch(config-vlan)#name MGT
+Switch(config-vlan)#vlan 40
+Switch(config-vlan)#name MISC
+Switch(config-vlan)#vlan 50
+Switch(config-vlan)#name NATIVE
+Switch(config-vlan)#exit
+Switch(config)#int fa0/1
+Switch(config-if)#switchport mode trunk
+Switch(config-if)#switchport trunk native vlan 50
+Switch(config-if)#exit
+Switch(config)#int range fa0/2-4
+Switch(config-if-range)#switchport mode access
+Switch(config-if-range)#switchport access vlan 10
+Switch(config-if-range)#switchport voice vlan 20
+Switch(config-if-range)#exit
+Switch(config)#int range fa0/5-24
+Switch(config-if-range)#switchport mode access
+Switch(config-if-range)#switchport access vlan 40
+Switch(config-if-range)#shut
+Switch(config-if-range)#exit
+Switch(config)#int range gig0/1-2
+Switch(config-if-range)#switchport mode access
+Switch(config-if-range)#switchport access vlan 40
+Switch(config-if-range)#exit
+Switch(config)#int range gig0/1-2
+Switch(config-if-range)#switchport mode access
+Switch(config-if-range)#switchport access vlan 40
+Switch(config-if-range)#shut
+Switch#copy running-config startup-config 
+
+
+************************************************ ROUTER CONFIGURATION **********************************************************
+
+Router(config)#interface fastEthernet 0/0.10
+Router(config-subif)#encapsulation dot1Q 10
+Router(config-subif)#ip address 192.168.10.1 255.255.255.0
+Router(config-subif)#exit
+
+Router(config)#interface fastEthernet 0/0.20
+Router(config-subif)#encapsulation dot1Q 20
+Router(config-subif)#ip address 192.168.20.1 255.255.255.0
+Router(config-subif)#exit
+
+Router(config)#interface fastEthernet 0/0.50
+Router(config-subif)#encapsulation dot1Q 50
+Router(config-subif)#ip address 192.168.50.1 255.255.255.0
+Router(config-subif)#exit
+
+Router(config)#interface fastEthernet 0/0
+Router(config-if)#no shutdown 
+
+Router(config)#ip dhcp excluded-address 192.168.10.1 192.168.10.5
+Router(config)#ip dhcp excluded-address 192.168.20.1 192.168.20.5
+Router(config)#ip dhcp pool DATA10
+Router(dhcp-config)#network 192.168.10.0 255.255.255.0
+Router(dhcp-config)#default-router 192.168.10.1
+Router(dhcp-config)#exit
+
+
+Router(config)#ip dhcp pool VOICE20
+Router(dhcp-config)#network 192.168.20.0 255.255.255.0
+Router(dhcp-config)#default-router 192.168.20.1
+Router(dhcp-config)#option 150 ip 192.168.20.1
+Router(dhcp-config)#exit
+
+
+
+Router(config)#telephony-service 
+Router(config-telephony)#max-dn 3 
+Router(config-telephony)#max-ephones 3
+Router(config-telephony)#ip source-address 192.168.20.1 port 2000
+
+Router(config-telephony)#ephone-dn 1
+Router(config-ephone-dn)#number 1010
+
+Router(config-ephone-dn)#ephone-dn 2
+Router(config-ephone-dn)#number 1020
+
+Router(config-ephone-dn)#ephone-dn 3
+Router(config-ephone-dn)#number 1030
+Router(config-ephone-dn)#exit
+
+
+Router(config-ephone)#ephone 1
+Router(config-ephone)#type 7960
+Router(config-ephone)#button 1:1
+
+Router(config-ephone)#ephone 2
+Router(config-ephone)#type 7960
+Router(config-ephone)#button 1:2
+
+
+Router(config-ephone)#ephone 3
+Router(config-ephone)#type 7960
+Router(config-ephone)#button 1:3
+Router#copy running-config startup-config 
